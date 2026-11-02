@@ -295,6 +295,21 @@ function canRemove(row, col) {
   const key = col+","+row;
   if ((state[key]||0) <= 0) return false;
 
+  const t = talents.find(x => x[0]===row && x[1]===col);
+  if (!t) return false;
+  const clean = s => (s||"").replace(/[\n\-.]/g," ").replace(/\s+/g," ").trim().toLowerCase();
+
+  // This talent points an arrow at a dependent (prereq field names the lower talent).
+  // Cannot reduce it while that dependent still has ranks.
+  if (t[5]) {
+    const depName = clean(t[5]);
+    const dependent = talents.find(x => clean(x[2]) === depName);
+    if (dependent) {
+      const dKey = dependent[1]+","+dependent[0];
+      if ((state[dKey]||0) > 0) return false;
+    }
+  }
+
   state[key]--;
   let blocked = false;
   for (let r = row+1; r <= 7; r++) {
