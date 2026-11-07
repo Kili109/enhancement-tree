@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WoW Forever Shaman Talents</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0c0c0e;
+    color: #ddd;
+    font-family: system-ui, -apple-system, sans-serif;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 { font-size: 15px; font-weight: 500; color: #999; margin-bottom: 4px; letter-spacing: 1px; }
+  .meta { font-size: 12px; color: #666; margin-bottom: 12px; }
+  .points { font-size: 13px; color: #888; margin-bottom: 14px; }
+  .trees { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .tree-wrap {
+    background: #121214;
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+    padding: 14px 10px 8px;
+    min-width: 280px;
+  }
+  .tree-title { text-align: center; font-size: 12px; font-weight: 600; color: #bbb; margin-bottom: 12px; letter-spacing: 1px; }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(4, 58px);
+    gap: 8px 14px;
+    margin-bottom: 22px;
+    justify-content: center;
+  }
+  .talent {
+    width: 54px;
+    height: 54px;
+    background: #1c1c20;
+    border: 2px solid #3a3a42;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.15;
+    color: #ccc;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+  }
+  .talent.maxed { border-color: #3d7a3d; background: #121a12; box-shadow: 0 0 0 1px #3d7a3d inset; }
+  .talent.partial { border-color: #c9a227; background: #1e1a10; }
+  .talent.locked { opacity: 0.4; cursor: not-allowed; }
+  .ranks { font-size: 9px; color: #888; margin-top: 2px; }
+  .arrow {
+    position: absolute;
+    top: 54px;
+    left: 50%;
+    width: 2px;
+    background: #777;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: -3px;
+    border: 4px solid transparent;
+    border-top-color: #777;
+  }
+  .arrow.s { height: 22px; }
+  .arrow.m { height: 98px; }
+  .arrow.l { height: 174px; }
+  .empty { visibility: hidden; }
+  .tooltip {
+    position: absolute;
+    background: #1a1a1e;
+    border: 1px solid #3a3a42;
+    color: #ccc;
+    font-size: 11px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    max-width: 280px;
+    z-index: 20;
+    pointer-events: none;
+    display: none;
+    white-space: pre-wrap;
+    line-height: 1.35;
+  }
+  button {
+    margin-top: 14px;
+    background: #1c1c20;
+    color: #aaa;
+    border: 1px solid #3a3a42;
+    padding: 6px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  button:hover { background: #252528; }
+</style>
+</head>
+<body>
+<h1>SHAMAN TALENTS</h1>
+<div class="meta">WoW Forever</div>
+<div class="points">Points spent: <span id="spent">0</span> / 51</div>
+<div class="trees" id="trees"></div>
+<div class="tooltip" id="tip"></div>
+<button onclick="reset()">Reset</button>
+<script>
+const trees = {
+  elemental: {
+    name: "ELEMENTAL",
+    talents: [
+      [1,1,"Convection",5,"Reduces the mana cost of your Shock, Lightning Bolt, and Chain Lightning spells by 2% per rank."],
+      [1,2,"Concussion",5,"Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by 1% per rank."],
+      [2,0,"Elem. Devastation",3,"Your Critical Strikes with direct damage spells increase your chance to get a Critical Strike with melee attacks by 3% per rank for 10 sec."],
+      [2,1,"Reverberation",5,"Reduces the cooldown of your Shock spells by 0.2 sec per rank."],
+      [2,2,"Elem. Alacrity",3,"Reduces the cast time of your Lightning Bolt and Chain Lightning spells by 0.17 sec per rank.","Lightning Overload"],
+      [2,3,"Call of Flame",3,"Increases the damage done by your Fire Totems and by your Flame Shock and Fire Nova spells by 5% per rank, as well as increases the duration of your Flame Shock spell by 3 sec per rank."],
+      [3,0,"Elem. Focus",1,"Gives you a 10% chance to enter a Clearcasting state after casting any Fire, Frost, or Nature damage spell. The Clearcasting state reduces the mana cost of your next damage spell by 100%."],
+      [3,1,"Elem. Warding",3,"Reduces damage taken from Fire, Frost, and Nature effects by 3.3% per rank."],
+      [3,3,"Elemental Shield",1,"Three charges. Reflects a flat amount of Fire, Frost or Nature damage back at the caster."],
+      [4,0,"Trial by Fire",2,"Increases the damage done by your Fire Nova spell by 10% per rank and reduces its cooldown by 2 sec per rank, and increases the duration of your Magma Totem by 10 sec per rank."],
+      [4,1,"Eye of the Storm",3,"Gives your Lightning Bolt and Chain Lightning spells a 23% chance per rank to not lose casting time when you take damage."],
+      [4,3,"Earthbound",1,"Your Earthbind Totem Immobilizes nearby targets for 5 sec when cast."],
+      [5,0,"Elem. Reach",2,"Increases the range of your Lightning Bolt, Chain Lightning, and Fire Nova spells by 3 yards per rank."],
+      [5,1,"Thunderstrike",1,"Your Thunder Shock grants you the Thunderstrike buff for 12 sec: your next offensive Nature spell has +10% critical strike chance.","Lightning Mastery"],
+      [5,2,"Lightning Overload",3,"Gives your Lightning Bolt and Chain Lightning spells a 10% chance per rank to cast a second, similar spell on the same target at no additional cost that causes half damage and no threat.","Elem. Fury"],
+      [6,2,"Elem. Fury",5,"Increases the critical strike damage bonus of your Searing and Magma Totems and your Fire, Frost, and Nature spells by 20% per rank."],
+      [7,1,"Lightning Mastery",1,"Gain mastery over Lightning, reducing the cast time of your Lightning Bolt spell by 0.5 sec, and removing the cooldown from your Chain Lightning spell. Lasts 15 sec."]
+    ]
+  },
+  enhancement: {
+    name: "ENHANCEMENT",
+    talents: [
+      [1,0,"Earth's Grasp",2,"Increases the health of your Stoneclaw Totem by 25% and the radius of your Earthbind Totem by 10% per rank."],
+      [1,1,"Thund. Strikes",5,"Improves your chance to get a critical strike with all spells and attacks by 1% per rank."],
+      [1,2,"Ancest. Know.",5,"Increases your Intellect by 2% per rank."],
+      [1,3,"Guard. Totems",2,"Increases the amount of damage reduced by your Stoneskin Totem and Windwall Totem by 10% per rank and reduces the cooldown of your Grounding Totem by 1 sec per rank."],
+      [2,1,"Mental Quickness",2,"Increases your spell damage and healing by up to 15% of your Intellect per rank.","Mental Dexterity"],
+      [2,2,"Imp. Ghost Wolf",2,"Reduces the cast time of your Ghost Wolf spell by 1.5 sec per rank, and Ghost Wolf may be used indoors."],
+      [2,3,"Imp. Shields",3,"Increases the effectiveness of your shield spells by 5% per rank."],
+      [3,0,"Elem. Weapons",3,"Increases the melee attack power bonus of your Rockbiter Weapon by 7/13/20%, your Windfury Weapon effect by 13/27/40% and increases the damage caused by your Flametongue Weapon and Frostbrand Weapon by 5/10/15%."],
+      [3,2,"Sham. Focus",1,"Reduces the mana cost of your Shock and Lightning Shield spells by 45%."],
+      [3,3,"Zephyr",3,"Increases your chance to parry by 1% and dodge by 1% per rank."],
+      [4,0,"Earth Borne",5,"Increases your chance to block by 1% and the amount blocked by 10% per rank. Increases the impact of Strength on your block value by 40% per rank.","Tectonic"],
+      [4,1,"Mental Dexterity",3,"Increases your Attack Power by 50% of your Intellect per rank."],
+      [4,3,"Stormstrike",1,"Instantly strike for 150% weapon damage and increase the damage of your next offensive Nature spell by 20% for 12 sec.","Imp. Stormstrike"],
+      [5,1,"Spirit Weapons",1,"Gives a chance to parry enemy melee attacks, reduces all threat generated by your attacks by 30% while Rockbiter Weapon is not active, and increases all threat generated by 30% while Rockbiter Weapon is active."],
+      [5,2,"Flurry",5,"Increases your attack speed by 6% for your next 3 swings after dealing a melee critical strike per rank.","Rage of the Farseer"],
+      [5,3,"Imp. Stormstrike",2,"When you Stormstrike, you have a 50% chance per rank to gain 50% mana regeneration while casting spells for 15 sec, and Stormstrike's cooldown has a 50% chance per rank to reset each time you Dodge or Parry."],
+      [6,0,"Tectonic",1,"If you are critically hit or crushing-blowed for more than 25% of your maximum health, you cannot be critically hit or crushing-blowed again for 3 seconds. This effect cannot occur more than once every 10 seconds."],
+      [6,3,"Maelstrom Weapon",5,"When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by 4% per rank. Stacks up to 5 times. Lasts 30 sec."],
+      [7,2,"Rage of the Farseer",1,"Increases your attack speed by 30% for 25 sec."]
+    ]
+  },
+  restoration: {
+    name: "RESTORATION",
+    talents: [
+      [1,1,"Imp. Healing Wave",5,"Reduces the casting time of your Healing Wave spell by 0.1 sec per rank."],
+      [1,2,"Tidal Focus",5,"Reduces the Mana cost of your healing spells by 1% per rank and improves your chance to hit by 1% per rank."],
+      [2,0,"Mindfulness",3,"Allows 17% of your Mana regeneration per rank to continue while casting."],
+      [2,1,"Natural Grace",3,"Reduces the threat generated by your spells by 5% per rank."],
+      [2,2,"Totemic Focus",5,"Reduces the Mana cost of your totems and any spells that summon or move them by 5% per rank."],
+      [2,3,"Imp. Reincarnation",2,"Reduces the cooldown of your Reincarnation spell by 10 min per rank, increases your maximum health by 2% per rank, and increases the amount of health and Mana you reincarnate with by an additional 10% per rank."],
+      [3,0,"Ancestral Healing",3,"Increases your target's armour by 1 times your Intellect per rank for 15 sec after a critical effect from one of your healing spells."],
+      [3,1,"Healing Focus",3,"Gives your healing spells a 23% chance per rank to not lose casting time when you take damage."],
+      [3,2,"Water Shield",1,"The caster is surrounded by 3 globes of water. When a spell, melee, or ranged attack hits the caster or when one of the caster's spells gets a critical result, 2% of maximum mana is restored to the caster, expending one globe. Lasts 10 min."],
+      [4,0,"Tidal Mastery",5,"Increases the critical effect chance of your healing spells by 1% per rank."],
+      [4,1,"Restorative Totems",5,"Increases the effect of your Mana Spring Totem by 5% per rank and increases the effect of your Healing Stream Totem by 10% per rank."],
+      [4,2,"Mana Tide Totem",1,"Summons a Mana Tide Totem with 5 health at the feet of the caster for 12 sec that restores 88 mana every 3 seconds to group members within 30 yards."],
+      [5,1,"Healing Way",3,"Increases the amount healed by your Healing Wave spell by 8% per rank.","Riptide"],
+      [5,2,"Nature's Swiftness",1,"When activated, your next Nature spell with a casting time less than 10 sec. becomes an instant cast spell."],
+      [6,2,"Ripple",5,"Your healing spells have a 4% chance per rank to cast again for half the effect."],
+      [7,1,"Riptide",1,"Heals a friendly target for 445 over 15 sec, and increases the effectiveness of your Chain Heal casts directly on that target by 25%."]
+    ]
+  }
+};
+
+let ranks = {};
+
+function getKey(tree, row, col) { return tree + "-" + row + "-" + col; }
+
+function cleanName(s) {
+  return (s || "").replace(/[\n\-.]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+function canRank(tree, row, col) {
+  let spent = 0;
+  trees[tree].talents.forEach(t => {
+    spent += ranks[getKey(tree, t[0], t[1])] || 0;
+  });
+  if (spent < 5 * (row - 1)) return false;
+  const tal = trees[tree].talents.find(x => x[0] === row && x[1] === col);
+  if (tal) {
+    const prereq = trees[tree].talents.find(x => x[5] && cleanName(x[5]) === cleanName(tal[2]));
+    if (prereq) {
+      const pk = getKey(tree, prereq[0], prereq[1]);
+      if ((ranks[pk] || 0) < prereq[3]) return false;
+    }
+  }
+  return true;
+}
+
+function canRemove(tree, row, col) {
+  const k = getKey(tree, row, col);
+  if ((ranks[k] || 0) <= 0) return false;
+  const tal = trees[tree].talents.find(x => x[0] === row && x[1] === col);
+  if (!tal) return false;
+  if (tal[5]) {
+    const dep = trees[tree].talents.find(x => cleanName(x[2]) === cleanName(tal[5]));
+    if (dep) {
+      const dk = getKey(tree, dep[0], dep[1]);
+      if ((ranks[dk] || 0) > 0) return false;
+    }
+  }
+  ranks[k]--;
+  let blocked = false;
+  for (let r = row + 1; r <= 7; r++) {
+    let later = 0;
+    trees[tree].talents.forEach(tt => { if (tt[0] === r) later += ranks[getKey(tree, tt[0], tt[1])] || 0; });
+    if (later > 0) {
+      let prior = 0;
+      trees[tree].talents.forEach(tt => { if (tt[0] < r) prior += ranks[getKey(tree, tt[0], tt[1])] || 0; });
+      if (prior < 5 * (r - 1)) { blocked = true; break; }
+    }
+  }
+  ranks[k]++;
+  return !blocked;
+}
+
+function arrowClass(prereq) {
+  const p = (prereq || "").toLowerCase();
+  if (p.includes("tectonic") || p.includes("farseer") || p.includes("flurry") || p.includes("mastery") || p.includes("fury")) return "m";
+  return "s";
+}
+
+function init() {
+  const container = document.getElementById("trees");
+  container.innerHTML = "";
+  Object.keys(trees).forEach(treeId => {
+    const wrap = document.createElement("div");
+    wrap.className = "tree-wrap";
+    const title = document.createElement("div");
+    title.className = "tree-title";
+    title.textContent = trees[treeId].name;
+    wrap.appendChild(title);
+    for (let r = 1; r <= 7; r++) {
+      const row = document.createElement("div");
+      row.className = "row";
+      for (let c = 0; c < 4; c++) {
+        const tal = trees[treeId].talents.find(x => x[0] === r && x[1] === c);
+        if (!tal) {
+          const e = document.createElement("div");
+          e.className = "empty";
+          row.appendChild(e);
+          continue;
+        }
+        const el = document.createElement("div");
+        el.className = "talent";
+        el.dataset.tree = treeId;
+        el.dataset.row = r;
+        el.dataset.col = c;
+        const short = tal[2].replace(/\n/g, "<br>");
+        el.innerHTML = short + '<div class="ranks">0/' + tal[3] + '</div>';
+        if (tal[5]) {
+          const dep = trees[treeId].talents.find(x => cleanName(x[2]) === cleanName(tal[5]));
+          if (dep && dep[1] === c) {
+            const rows = dep[0] - r;
+            const arrow = document.createElement("div");
+            arrow.className = "arrow";
+            arrow.style.height = (rows * 76 - 54) + "px";
+            el.appendChild(arrow);
+          }
+        }
+        el.onmouseenter = (e) => showTip(e, tal[4] || "");
+        el.onmousemove = (e) => showTip(e, tal[4] || "");
+        el.onmouseleave = hideTip;
+        el.onclick = (e) => {
+          if (e.shiftKey) {
+            if (canRemove(treeId, r, c)) ranks[getKey(treeId, r, c)]--;
+          } else {
+            if (canRank(treeId, r, c) && (ranks[getKey(treeId, r, c)] || 0) < tal[3]) ranks[getKey(treeId, r, c)] = (ranks[getKey(treeId, r, c)] || 0) + 1;
+          }
+          updateUI();
+        };
+        el.oncontextmenu = (e) => {
+          e.preventDefault();
+          if (canRemove(treeId, r, c)) { ranks[getKey(treeId, r, c)]--; updateUI(); }
+        };
+        row.appendChild(el);
+      }
+      wrap.appendChild(row);
+    }
+    container.appendChild(wrap);
+  });
+  updateUI();
+}
+
+function updateUI() {
+  let total = 0;
+  document.querySelectorAll(".talent:not(.empty)").forEach(el => {
+    const tree = el.dataset.tree;
+    const row = +el.dataset.row;
+    const col = +el.dataset.col;
+    const k = getKey(tree, row, col);
+    const cur = ranks[k] || 0;
+    const tal = trees[tree].talents.find(x => x[0] === row && x[1] === col);
+    const max = tal[3];
+    total += cur;
+    el.querySelector(".ranks").textContent = cur + "/" + max;
+    el.classList.remove("maxed", "partial", "locked");
+    if (cur === max) el.classList.add("maxed");
+    else if (cur > 0) el.classList.add("partial");
+    if (!canRank(tree, row, col) && cur === 0) el.classList.add("locked");
+  });
+  document.getElementById("spent").textContent = total;
+}
+
+function showTip(e, text) {
+  if (!text) return;
+  const tip = document.getElementById("tip");
+  tip.textContent = text;
+  tip.style.display = "block";
+  tip.style.left = (e.pageX + 12) + "px";
+  tip.style.top = (e.pageY + 12) + "px";
+}
+function hideTip() { document.getElementById("tip").style.display = "none"; }
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".talent")) hideTip();
+});
+document.addEventListener("touchstart", (e) => {
+  if (!e.target.closest(".talent")) hideTip();
+}, { passive: true });
+
+function reset() { ranks = {}; updateUI(); }
+
+init();
+</script>
+</body>
+</html>
