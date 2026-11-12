@@ -191,11 +191,23 @@ function cleanName(s) {
 }
 
 function canRank(tree, row, col) {
+  // Global 51-point cap
+  let total = 0;
+  Object.keys(trees).forEach(tid => {
+    trees[tid].talents.forEach(t => {
+      total += ranks[getKey(tid, t[0], t[1])] || 0;
+    });
+  });
+  if (total >= 51) return false;
+
+  // Existing per-tree row requirement
   let spent = 0;
   trees[tree].talents.forEach(t => {
     spent += ranks[getKey(tree, t[0], t[1])] || 0;
   });
   if (spent < 5 * (row - 1)) return false;
+
+  // Existing prereq check
   const tal = trees[tree].talents.find(x => x[0] === row && x[1] === col);
   if (tal) {
     const prereq = trees[tree].talents.find(x => x[5] && cleanName(x[5]) === cleanName(tal[2]));
